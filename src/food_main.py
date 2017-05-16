@@ -1,8 +1,9 @@
 import pandas as pd
 import json
 import matplotlib.pyplot as plt
+from sklearn import preprocessing, linear_model
 import numpy as np
-from sklearn import datasets, linear_model
+import random
 
 
 '''
@@ -30,7 +31,32 @@ Model: apply at least 2 supervised learning methods
 # data = json.load(data_file)
 
 # Load the data set - csv
-style = pd.read_csv('style-all.csv')
+# skip importing the unnecessary columns for: id, sourceDisplayName, rating
+# TODO: more_cols_to_keep = 'flavors', 'totalTimeInSeconds', 'recipeName', 'attributes'
+style = pd.read_csv('style-all.csv', names=['totalTimeInSeconds', 'recipeName', 'id'])
+
+# Create a category (label) encoder object
+le = preprocessing.LabelEncoder()
+
+# Fit the encoder to the pandas column
+
+# Convert style word to numeric
+
+# Plot style word and cooking time variables against each other
+
+# Drop id column
+# style.drop('id', axis=1, inplace=True)
+
+# Convert entire df to lowercase
+# style2 = style.apply(lambda x: x.astype(str).str.lower())
+
+# Drop duplicated rows
+df.drop_duplicates()
+
+# Drop any duplicated recipeNames, take the last observation
+style.drop_duplicates(['recipeName'], keep='last')
+
+
 
 # Use only one feature
 style_X = style.data[:, np.newaxis, 2]
