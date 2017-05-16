@@ -1,18 +1,36 @@
 
 '''
 Cooking style words
-- List from Wikipedia
+from allrecipes.com
+
+Verbs:
+'''
+styles = [
+            scramble,
+            fried,
+            boil,
+            roast,
+            blanch,
+            braise,
+            puree,
+            poach,
+            grill,
+            steam,
+            mash,
+            sautee,
+            gratin,
+            glaze,
+            bake
+        ]
 '''
 
-roasting, searing, baking, smoking, grilling (charbroiling),
-rotisserie toasting, blanching, boiling, decoction, parboiling, shocking,
-coddling, creaming, infusion, poaching, simmering, slow cooker, smothering,
-sous-vide, steeping, stewing,
-bain-marie (double boiling), steaming,
+Nouns:
+sauce (pesto, hollandaise, roux, cream, gravy)
+stock
+breads
+crust
 
-hot salt frying, deep frying, pan frying, shallow frying, stir frying (bao), gentle frying, pressure frying,
-
-blackening, browning, reduction, sautéing, sweating,
-* barbecuing, braising, flambé, fricassee, indirect grilling/plank cooking, stir frying (chao),
-air frying, microwaving, pressure cooking, thermal cooking,
-curing, fermenting, pickling, souring,
+More Specificity:
+fried (pan fried, stir fried, deep fried, french fries)
+boiled (soft-boiled, hard-boiled)
+'''
