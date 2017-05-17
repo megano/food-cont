@@ -3,8 +3,9 @@ import json
 import matplotlib.pyplot as plt
 from sklearn import preprocessing
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedShuffleSplit, train_test_split
 from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import RandomForestClassifier
 import numpy as np
 import random
 
@@ -24,7 +25,7 @@ scraping, mongoDB, python, pandas. Scraping to get the JSON data from the API.
 Python, pandas and mongoDB to store and explore data, do feature engineering.
 
 Model: apply at least 2 supervised learning methods
-(including logistic regression, random forest - make sure to use classification kind).
+(including logistic regression, classification random forest).
 Show ROC curve for the 2 similar styles and 2 different styles.
 '''
 
@@ -47,20 +48,21 @@ df = df_roast.append(df_bake, ignore_index=True)
 df.head()
 df.reset_index()
 
+# Convert style word column to category type
+df['sw'] = df['sw'].astype('category')
+# Create category column variable so it's easier to transform more columns later
+cat_columns = df.select_dtypes(['category']).columns
+# Convert categorical values to numeric
+df[cat_columns] = df[cat_columns].apply(lambda x: x.cat.codes)
+
 # drop column with recipe name and number
 df.drop("id", axis=1, inplace=True)
 
-# Convert string categorical names to integers
-integerized_data = preprocessing.LabelEncoder().fit_transform(df['sw'])
-
-# View the integerized data array
-integerized_data
-
-# Convert integer categorical representations to OneHot encodings
-preprocessing.OneHotEncoder().fit_transform(integerized_data.reshape(-1,1)).toarray()
+# Drop the 84 entries with no cook time value
+df.dropna(axis=0, how='any', inplace=True)
 
 # Convert cook time from seconds to hours
-df['totalTimeInHours'] = df['totalTimeInSeconds']/3600
+# df['totalTimeInHours'] = df['totalTimeInSeconds']/3600
 
 '''
 df.isnull().sum()
@@ -84,33 +86,37 @@ df[df['totalTimeInHours'] > 1].count()
 1677 of 8132 roasted and baked recipes are greater than 1 hr cook time.
 '''
 
-# Drop the 84 entries with no cook time value
-df.dropna(axis=0, how='any', inplace=True)
+# reshape the dataframe
+# df.iloc[:, 0].apply(pd.Series)
 
 # Create our predictor (independent) variable
 # and our response (dependent) variable
-X = df['totalTimeInHours'] # can add in other variables
+X = df['totalTimeInSeconds'] # can add in other variables
 y = df['sw']
 
+# Split data into 30% test and 70% training
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
+
+# import pdb; pdb.set_trace();
 # Split predictor and response into training/testing sets
 ## Use stratified sampling to get same representation in test and train sets
-sss = StratifiedShuffleSplit(n_splits=2, test_size=0.5, random_state=0)
-sss.get_n_splits(X, y)
-print(sss)
+# sss = StratifiedShuffleSplit(n_splits=2, test_size=0.5, random_state=0)
+# sss.get_n_splits(X, y)
+# print(sss)
 
-for train_index, test_index in sss.split(X, y):
-    print("TRAIN:", train_index, "TEST:", test_index)
-    X_train, X_test = X[train_index], X[test_index]
-    y_train, y_test = y[train_index], y[test_index]
+# for train_index, test_index in sss.split(X, y):
+#     print("TRAIN:", train_index, "TEST:", test_index)
+#     X_train, X_test = X[train_index], X[test_index]
+#     y_train, y_test = y[train_index], y[test_index]
 
-# # Create a scaler object to standardize features
-# sc = StandardScaler()
-#
-# # Fit the scaler to the training data and transform
-# X_train_std = sc.fit_transform(X_train)
-#
-# # Apply the scaler to the test data
-# X_test_std = sc.transform(X_test)
+# Create a scaler object to standardize features
+sc = StandardScaler()
+
+# Fit the scaler to the training data and transform
+X_train_std = sc.fit_transform(X_train)
+
+# Apply the scaler to the test data
+X_test_std = sc.transform(X_test)
 
 # Run logistic regression with L1 penalty with various regularization strengths
 C = [10, 1, .1, .001]
@@ -123,3 +129,29 @@ for c in C:
     print('Training accuracy:', clf.score(X_train, y_train))
     print('Test accuracy:', clf.score(X_test, y_test))
     print('')
+
+## Random forest
+# Create random forest classifier.
+clf = RandomForestClassifier(n_jobs=2)
+
+# Train classifier
+clf.fit(X_train, y_train)
+
+# Predict
+clf.predict(X_test, y_test)
+
+# View predicted probabilities for first 10 observations
+clf.predict_proba(y_test)[0:10]
+
+# Show style word for each predicted class
+predictions = df.sw[clf.predict(X_test)]
+# View predicted style for first 10 observations
+predictions[0:10]
+# View actual style for first 10 observations
+y_test.head()
+
+# Confusion matrix
+pd.crosstab(X_test['sw'], predictions, rownames=['Actual Style'], colnames=['Predicted Style'])
+
+# View a list of the features and their importance scores
+list(zip(X_train, clf.feature_importances_))
