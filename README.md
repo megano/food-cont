@@ -1,4 +1,4 @@
-# food-cont
+# Can We Predict Cooking Style?
 
 # Background
 I love making food and becoming a better cook by practicing new cooking styles. But when I get home after a long day the last thing I want to do is research recipes. I still need to eat, so to solve the recipe picking problem I made a dinner plan generator. But the planner doesn’t have a “cooking style” feature, so it’s not helping me get any better at cooking. I have 1 million recipes with no cooking style labels, and need a way to label them so my dinner planner can help me build up cooking skills.
