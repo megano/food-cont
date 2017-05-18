@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import MinMaxScaler
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 import re
@@ -36,6 +39,13 @@ df = pd.concat([df_roast, df_bake, df_grill, df_steam, df_braise, df_fried, df_g
 df.style_word.unique()
 df.head()
 
+# Vectorize
+countvec = CountVectorizer()
+countvec.fit_transform(df.ingredients)
+df_ing = pd.DataFrame(countvec.fit_transform(df.ingredients).toarray(), columns=countvec.get_feature_names())
+# print df_ing
+df_ing2 = pd.concat([df, df_ing], ignore_index=True)
+#
 # Create a variable for flour being in ingredient list
 flour = [bool(re.search('.*flour.*',x)) for x in  df['ingredients']]
 # Engineer new column with True and False values for flour present in ingredient list
@@ -84,11 +94,11 @@ Index([u'style_word', u'has_flour', u'totalTimeInHours', u'is_train'], dtype='ob
 '''
 
 # Create our predictor (independent) variable
-X = df[df.columns[1:3]]
+X = df[[col for col in df.columns if col != 'style_word']]
 # And our response (dependent) variable
 y = df['style_word']
 
-
+# Split training and testing
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y)
 
 # Create a random forest classifier.
@@ -96,9 +106,8 @@ clf = RandomForestClassifier()
 
 # Train the classifier
 clf.fit(X_train, y_train)
+
 clf.score(X_train, y_train)
-
-
 clf.score(X_test, y_test)
 
 y_test_predicted = clf.predict(X_test)
@@ -153,4 +162,16 @@ def percConvert(ser):
   .apply(percConvert, axis=1)
 
 # View X and importance scores
-list(zip(X_train, clf.feature_importances_))
+print list(zip(X_train, clf.feature_importances_))
+
+
+# # Run logistic regression with L1 penalty with various regularization strengths
+# C = [10, 1, .1, .001]
+# for c in C:
+#     clf = LogisticRegression(penalty='l1', C=c)
+#     clf.fit(X_train, y_train)
+#     print('C:', c)
+#     print('Coefficient of each feature:', clf.coef_)
+#     print('Training accuracy:', clf.score(X_train, y_train))
+#     print('Test accuracy:', clf.score(X_test, y_test))
+#     print('')
