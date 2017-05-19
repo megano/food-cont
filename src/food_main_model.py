@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
@@ -20,6 +21,7 @@ df_sautee = pd.read_csv('../data/style-sautee.csv', header='infer', usecols=usec
 df_mash = pd.read_csv('../data/style-mash.csv', header='infer', usecols=usecols, index_col="id")
 df_steam = pd.read_csv('../data/style-steam.csv', header='infer', usecols=usecols, index_col="id")
 df_scramble = pd.read_csv('../data/style-scramble.csv', header='infer', usecols=usecols, index_col="id")
+df_none = pd.read_csv('../data/style-none.csv', header='infer', usecols=usecols, index_col="id")
 
 # To each df, add new column with style word, which we are going to try to predict
 df_roast['style_word'] = 'roast'
@@ -32,9 +34,12 @@ df_sautee['style_word'] = 'sautee'
 df_mash['style_word'] = 'mash'
 df_steam['style_word'] = 'steam'
 df_scramble['style_word'] = 'scramble'
+df_none['style_word'] = 'none'
+
+df_none = df_none[0:500]
 
 # Combine style df rows to create a new df including all style words.
-df = pd.concat([df_roast, df_bake, df_grill, df_steam, df_braise, df_fried, df_glaze, df_sautee, df_mash, df_scramble], ignore_index=True)
+df = pd.concat([df_roast, df_bake, df_grill, df_steam, df_braise, df_fried, df_glaze, df_sautee, df_mash, df_scramble, df_none], ignore_index=True)
 df.style_word.unique()
 df.head()
 
@@ -42,12 +47,32 @@ df.head()
 flour = [bool(re.search('.*flour.*',x)) for x in  df['ingredients']]
 # Engineer new column with True and False values for flour present in ingredient list
 df['has_flour'] = flour
-
 # Change data type of df column to 0 and 1
 df.has_flour = df.has_flour.astype(np.float64)
 
+# Create a variable for cheese being in ingredient list
+cheese = [bool(re.search('.*cheese.*',x)) for x in  df['ingredients']]
+# Engineer new column with True and False values for flour present in ingredient list
+df['has_cheese'] = cheese
+# Change data type of df column to 0 and 1
+df.has_cheese = df.has_cheese.astype(np.float64)
+
+# Create a variable for seasoning being in ingredient list
+seasoning = [bool(re.search('.*seasoning.*',x)) for x in  df['ingredients']]
+# Engineer new column with True and False values for flour present in ingredient list
+df['has_seasoning'] = seasoning
+# Change data type of df column to 0 and 1
+df.has_seasoning = df.has_seasoning.astype(np.float64)
+
+# Create a variable for oil being in ingredient list
+oil = [bool(re.search('.*oil.*',x)) for x in  df['ingredients']]
+# Engineer new column with True and False values for flour present in ingredient list
+df['has_oil'] = oil
+# Change data type of df column to 0 and 1
+df.has_oil = df.has_oil.astype(np.float64)
 # Add flour column onto main df
-pd.concat([df, df['has_flour']], axis=1)
+pd.concat([df, df['has_flour'], df['has_oil'], df['has_cheese'], df['has_seasoning']], axis=1)
+
 # Drop ingredients column
 df.drop('ingredients', axis=1, inplace=True)
 
@@ -79,8 +104,6 @@ df.drop('totalTimeInSeconds', axis=1, inplace=True)
 # # Re-count mising values per column to make sure there's no null values anymore
 # print "Missing values per column:"
 # print df.apply(num_missing, axis=0) #axis=0 defines that function is to be applied on each column
-
-df.columns
 
 # Create our predictor (independent) variable
 X = df[[col for col in df.columns if col != 'style_word']]
@@ -132,11 +155,11 @@ clf.predict(X_test)
 # View the predicted probabilities of the first 10 observations
 clf.predict_proba(X_test)[0:10]
 
-# Make crosstab to check hypothesis that cooking time affects cooking style
-pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True)
-def percConvert(ser):
-    return ser/float(ser[-1])
-    pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True).apply(percConvert, axis=1)
+# Make crosstab
+# pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True)
+# def percConvert(ser):
+#     return ser/float(ser[-1])
+#     print pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True).apply(percConvert, axis=1)
 
 # View X and importance scores
 print list(zip(X_train, clf.feature_importances_))
