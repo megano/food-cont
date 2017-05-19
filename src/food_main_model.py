@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 import re
@@ -73,8 +73,8 @@ df['totalTimeInHours'] = df['totalTimeInSeconds']/3600
 df.drop('totalTimeInSeconds', axis=1, inplace=True)
 
 # Plot cook time in hours for each cooking style
-df.boxplot(column="totalTimeInHours",by="style_word")
-plt.show()
+# df.boxplot(column="totalTimeInHours",by="style_word")
+# plt.show()
 
 # # Re-count mising values per column to make sure there's no null values anymore
 # print "Missing values per column:"
@@ -89,6 +89,16 @@ y = df['style_word']
 
 # Split training and testing
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y)
+
+# Standardize data since value for cooking hours is not 0-1.
+# Create a scaler object
+sc = MinMaxScaler()
+
+# Fit the scaler to the training data and transform
+X_train = sc.fit_transform(X_train)
+
+# Apply the scaler to the test data
+X_test = sc.transform(X_test)
 
 # Run logistic regression with L1 penalty (aka least absolute deviations)
 # with various regularization strengths
