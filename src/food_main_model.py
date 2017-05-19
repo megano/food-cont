@@ -3,7 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MinMaxScaler
-# from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 import re
@@ -56,7 +55,7 @@ df.drop('ingredients', axis=1, inplace=True)
 # def num_missing(x):
 #   return sum(x.isnull())
 
-# # Count mising values per column:
+# # Count missing values per column:
 # print "Missing values per column:"
 # print df.apply(num_missing, axis=0) #axis=0 defines that function is to be applied on each column
 #
@@ -74,8 +73,8 @@ df['totalTimeInHours'] = df['totalTimeInSeconds']/3600
 df.drop('totalTimeInSeconds', axis=1, inplace=True)
 
 # Plot cook time in hours for each cooking style
-# df.boxplot(column="totalTimeInHours",by="style_word")
-# plt.show()
+df.boxplot(column="totalTimeInHours",by="style_word")
+plt.show()
 
 # # Re-count mising values per column to make sure there's no null values anymore
 # print "Missing values per column:"
@@ -91,7 +90,6 @@ y = df['style_word']
 # Split training and testing
 X_train, X_test, y_train, y_test = train_test_split(X, y, stratify=y)
 
-
 # Run logistic regression with L1 penalty (aka least absolute deviations)
 # with various regularization strengths
 C = [10, 1, .1, .001]
@@ -103,7 +101,6 @@ for c in C:
     print('Training accuracy:', clf.score(X_train, y_train))
     print('Test accuracy:', clf.score(X_test, y_test))
     print('')
-
 
 # Create a random forest classifier.
 clf = RandomForestClassifier()
@@ -117,7 +114,7 @@ clf.score(X_test, y_test)
 y_test_predicted = clf.predict(X_test)
 
 # Create confusion matrix
-pd.crosstab(y_test, y_test_predicted, rownames=['Actual Style'], colnames=['Predicted Style'])
+print pd.crosstab(y_test, y_test_predicted, rownames=['Actual Style'], colnames=['Predicted Style'])
 
 # Apply trained classifier to the test data
 clf.predict(X_test)
@@ -126,10 +123,10 @@ clf.predict(X_test)
 clf.predict_proba(X_test)[0:10]
 
 # Make crosstab to check hypothesis that cooking time affects cooking style
-# pd.crosstab(df['totalTimeInSeconds'], df['style_word'],margins=True)
+pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True)
 def percConvert(ser):
-  return ser/float(ser[-1])
-  pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True).apply(percConvert, axis=1)
+    return ser/float(ser[-1])
+    pd.crosstab(df['totalTimeInHours'], df['style_word'],margins=True).apply(percConvert, axis=1)
 
 # View X and importance scores
 print list(zip(X_train, clf.feature_importances_))
